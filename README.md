@@ -88,7 +88,7 @@ All 11 requests pass across all 4 dataset iterations, including the 3 requests t
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/<your-username>/square-api-automation-suite.git
+git clone https://github.com/QuantumRay-code/Square-API-Automation-Suite.git
 ```
 
 **2. Create a free Square Developer account**
