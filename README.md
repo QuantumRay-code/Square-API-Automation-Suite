@@ -81,7 +81,7 @@ Latest full run (4 iterations, data-driven):
 | Test scripts run | 132 |
 | Assertions | 128 |
 | Failures | 0 |
-
+![image alt](https://github.com/QuantumRay-code/Square-API-Automation-Suite/blob/98048af5413586adf1ab347b0a037fc489aac634/reports/newman-reports.png)
 All 11 requests pass across all 4 dataset iterations, including the 3 requests that are expected to return non-2xx status codes as their correct outcome (`Decline Exception Handling`, `Volatility Boundary Check`, `Unauthorized Access Invalidation`).
 
 ## How to Use
