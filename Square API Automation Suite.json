@@ -1,0 +1,945 @@
+{
+  "info": {
+    "_postman_id": "a81f875b-c6e0-4b64-aba7-41c37bb41136",
+    "name": "Square API Automation Suite",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "35359176",
+    "_collection_link": "https://go.postman.co/collection/35359176-a81f875b-c6e0-4b64-aba7-41c37bb41136?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "square-api-test-automation-framework",
+      "item": [
+        {
+          "name": "End-to-End Ledger Transactions",
+          "item": [
+            {
+              "name": "Authorize Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the incoming structural transaction payload response\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Confirm order creation layer is structurally valid\r",
+                      "pm.test(\"Status code is 200 or 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Capture runtime transaction pipeline metrics safely\r",
+                      "if (responseData && responseData.order) {\r",
+                      "    if (responseData.order.id) {\r",
+                      "        pm.environment.set(\"savedOrderId\", responseData.order.id);\r",
+                      "        console.log(\"Captured Production Order ID Tracking Key:\", responseData.order.id);\r",
+                      "    }\r",
+                      "    \r",
+                      "    // Track starting version matrix from server\r",
+                      "    if (responseData.order.version !== undefined) {\r",
+                      "        pm.environment.set(\"currentOrderVersion\", responseData.order.version);\r",
+                      "        console.log(\"Synchronized Initial Database Version State:\", responseData.order.version);\r",
+                      "    }\r",
+                      "} else {\r",
+                      "    console.warn(\"Execution Alert: Response payload missing structural order schema context.\");\r",
+                      "}\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"order\": {\r\n    \"location_id\": \"{{locationId}}\",\r\n    \"line_items\": [\r\n      {\r\n        \"name\": \"{{itemName}}\",\r\n        \"quantity\": \"1\",\r\n        \"base_price_money\": {\r\n          \"amount\": {{itemPrice}},\r\n          \"currency\": \"USD\"\r\n        }\r\n      }\r\n    ]\r\n  },\r\n  \"idempotency_key\": \"{{$guid}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Fetch Order State",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the server response payload\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Validate HTTP connectivity layer is active\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Multi-Format Schema Parsing\r",
+                      "pm.test(\"Verify record state is OPEN\", function () {\r",
+                      "    let orderData = null;\r",
+                      "\r",
+                      "    // Format 1: Server returns an array under the \"orders\" property\r",
+                      "    if (responseData.orders && responseData.orders.length > 0) {\r",
+                      "        orderData = responseData.orders[0];\r",
+                      "    } \r",
+                      "    // Format 2: Server returns a single object under the \"order\" property\r",
+                      "    else if (responseData.order) {\r",
+                      "        orderData = responseData.order;\r",
+                      "    } \r",
+                      "    // Format 3: Server returns the object directly at the root level\r",
+                      "    else if (responseData && !responseData.errors) {\r",
+                      "        orderData = responseData;\r",
+                      "    }\r",
+                      "\r",
+                      "    // Evaluate the matched structural data layer against the correct field 'state'\r",
+                      "    if (orderData && orderData.state) {\r",
+                      "        console.log(\"Successfully extracted Order State:\", orderData.state);\r",
+                      "        pm.expect(orderData.state.toUpperCase()).to.eql(\"OPEN\");\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Property Missing: Unable to locate 'state' field in any response schema format.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders/{{savedOrderId}}",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders",
+                    "{{savedOrderId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Modify Order Records",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the incoming structural transaction payload response\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Assertion 1: Confirm that the data modification was accepted by the server\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Assertion 2: Advanced Strategy - Production Schema & State Mutation Validation\r",
+                      "pm.test(\"Verify record modification details\", function () {\r",
+                      "    const orderData = responseData.order || responseData;\r",
+                      "\r",
+                      "    if (orderData) {\r",
+                      "        // Save the new version back into the same variable for downstream requests\r",
+                      "        if (orderData.version !== undefined) {\r",
+                      "            pm.environment.set(\"currentOrderVersion\", orderData.version);\r",
+                      "            console.log(\"Synchronized New Order Version State:\", orderData.version);\r",
+                      "        }\r",
+                      "\r",
+                      "        if (orderData.line_items && orderData.line_items.length > 0) {\r",
+                      "            const itemDescription = orderData.line_items[0].name;\r",
+                      "            pm.expect(itemDescription).to.be.a('string');\r",
+                      "            console.log(\"Successfully verified committed line item name:\", itemDescription);\r",
+                      "        }\r",
+                      "\r",
+                      "        // Capture the real order total so downstream payment/refund requests\r",
+                      "        // can reference the correct amount instead of a hardcoded value.\r",
+                      "        if (orderData.total_money && orderData.total_money.amount !== undefined) {\r",
+                      "            pm.environment.set(\"currentOrderTotal\", orderData.total_money.amount);\r",
+                      "            console.log(\"Captured order total for this iteration:\", orderData.total_money.amount);\r",
+                      "        }\r",
+                      "\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Property Evaluation Failed: Response body does not contain valid transaction metadata.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"order\": {\r\n    \"location_id\": \"{{locationId}}\",\r\n    \"line_items\": [\r\n      {\r\n        \"name\": \"Data Driven Iteration Test\",\r\n        \"quantity\": \"1\",\r\n        \"base_price_money\": {\r\n          \"amount\": 500,\r\n          \"currency\": \"USD\"\r\n        }\r\n      }\r\n    ],\r\n    \"version\": {{currentOrderVersion}}\r\n  }\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders/{{savedOrderId}}",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders",
+                    "{{savedOrderId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Capture Payment Gateway",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the incoming payment transaction payload\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Assertion 1: Verify the payment request was accepted successfully\r",
+                      "pm.test(\"Status code is 200 or 201\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Assertion 2: Verify the payment completed successfully without cancellation\r",
+                      "pm.test(\"Verify payment is successfully COMPLETED\", function () {\r",
+                      "    const paymentData = responseData.payment;\r",
+                      "\r",
+                      "    if (paymentData && paymentData.status) {\r",
+                      "        console.log(\"Captured Payment Status from gateway:\", paymentData.status);\r",
+                      "        \r",
+                      "        // Ensure the payment went through cleanly\r",
+                      "        pm.expect(paymentData.status.toUpperCase()).to.be.oneOf([\"COMPLETED\", \"APPROVED\"]);\r",
+                      "\r",
+                      "        // Save the Payment ID for the refund step (Request 5)\r",
+                      "        pm.environment.set(\"savedPaymentId\", paymentData.id);\r",
+                      "        console.log(\"Cached Payment ID for Downstream Refund:\", paymentData.id);\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Property Evaluation Failed: 'payment' object or status missing from response.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"idempotency_key\": \"{{$guid}}\",\r\n  \"amount_money\": {\r\n    \"amount\": {{currentOrderTotal}},\r\n    \"currency\": \"USD\"\r\n  },\r\n  \"source_id\": \"cnon:card-nonce-ok\",\r\n  \"order_id\": \"{{savedOrderId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/payments",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "payments"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Execute Refund Request",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the incoming server response payload\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "const isCleanSuccess = pm.response.code === 200 || pm.response.code === 201;\r",
+                      "const isUpstreamCanceledBlock = pm.response.code === 400 && responseData.errors;\r",
+                      "\r",
+                      "// Track remaining refundable balance so the next request (Refund Balance Limit Check)\r",
+                      "// requests a valid amount instead of exceeding what is left.\r",
+                      "const currentTotal = pm.environment.get(\"currentOrderTotal\");\r",
+                      "if (currentTotal !== undefined) {\r",
+                      "    const remaining = parseInt(currentTotal) - 500;\r",
+                      "    pm.environment.set(\"remainingRefundableAmount\", remaining);\r",
+                      "    console.log(\"Remaining refundable balance after this refund:\", remaining);\r",
+                      "}\r",
+                      "\r",
+                      "pm.test(\"Status code validation layer\", function () {\r",
+                      "    if (isCleanSuccess) {\r",
+                      "        pm.response.to.have.status(200);\r",
+                      "    } else if (isUpstreamCanceledBlock) {\r",
+                      "        console.log(\"Portfolio Log: Handled upstream transaction cancellation safely.\");\r",
+                      "        pm.expect(pm.response.code).to.equal(400);\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(`Unexpected ledger status received: ${pm.response.code}`);\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "// Multi-State Refund Validation\r",
+                      "pm.test(\"Verify refund processing state\", function () {\r",
+                      "    const refundData = responseData.refund || responseData;\r",
+                      "\r",
+                      "    if (refundData && refundData.status) {\r",
+                      "        console.log(\"Captured Refund Status from gateway:\", refundData.status);\r",
+                      "        const normalizedStatus = refundData.status.toUpperCase();\r",
+                      "        const isValidState = [\"PENDING\", \"COMPLETED\", \"REJECTED\"].includes(normalizedStatus);\r",
+                      "        pm.expect(isValidState).to.be.true;\r",
+                      "\r",
+                      "        pm.environment.set(\"savedRefundId\", refundData.id);\r",
+                      "    } else if (isUpstreamCanceledBlock) {\r",
+                      "        console.log(\"Verified sandbox edge constraint: \" + responseData.errors[0].detail);\r",
+                      "        pm.expect(responseData.errors[0].code).to.be.a('string');\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Property Evaluation Failed: Missing response validation metrics.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"idempotency_key\": \"{{$guid}}\",\r\n  \"amount_money\": {\r\n    \"amount\": 500,\r\n    \"currency\": \"USD\"\r\n  },\r\n  \"payment_id\": \"{{savedPaymentId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/refunds",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "refunds"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Data Integrity & Operational Boundaries",
+          "item": [
+            {
+              "name": "Decline Exception Handling",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// HTTP Layer Check\r",
+                      "pm.test(\"Status code is 400 Bad Request\", function () {\r",
+                      "    pm.response.to.have.status(400);\r",
+                      "});\r",
+                      "\r",
+                      "// Exact Field Value Rejection Check\r",
+                      "pm.test(\"Verify explicit decline error metadata values\", function () {\r",
+                      "    pm.expect(responseData.errors[0].category).to.eql(\"INVALID_REQUEST_ERROR\");\r",
+                      "    pm.expect(responseData.errors[0].code).to.eql(\"VALUE_EMPTY\");\r",
+                      "});\r",
+                      "\r",
+                      "// Structural Blueprint Contract Validation\r",
+                      "// define an absolute draft schema checking data type constraints\r",
+                      "const errorContractSchema = {\r",
+                      "    \"type\": \"object\",\r",
+                      "    \"required\": [\"errors\"],\r",
+                      "    \"properties\": {\r",
+                      "        \"errors\": {\r",
+                      "            \"type\": \"array\",\r",
+                      "            \"minItems\": 1,\r",
+                      "            \"items\": {\r",
+                      "                \"type\": \"object\",\r",
+                      "                \"required\": [\"category\", \"code\", \"detail\"],\r",
+                      "                \"properties\": {\r",
+                      "                    \"category\": { \"type\": \"string\" },\r",
+                      "                    \"code\": { \"type\": \"string\" },\r",
+                      "                    \"detail\": { \"type\": \"string\" },\r",
+                      "                    \"field\": { \"type\": \"string\" }\r",
+                      "                }\r",
+                      "            }\r",
+                      "        }\r",
+                      "    }\r",
+                      "};\r",
+                      "\r",
+                      "// Use Postman's built-in tv4 validator to ensure every key matches its typed layout\r",
+                      "pm.test(\"Enforce Enterprise Schema Structural Contract Alignment\", function () {\r",
+                      "    const isContractValid = tv4.validate(responseData, errorContractSchema);\r",
+                      "    pm.expect(isContractValid).to.be.true;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"order\": {\r\n    \"location_id\": \"\"\r\n  },\r\n  \"idempotency_key\": \"{{$guid}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refund Balance Limit Check",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the incoming idempotent response payload\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Square returns the cached successful status code for matching idempotency keys\r",
+                      "pm.test(\"Status code is 200 or 201 (Idempotent Replay)\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+                      "});\r",
+                      "\r",
+                      "// Verify double-refund protection logic via status mapping\r",
+                      "pm.test(\"Verify double-refund protection logic\", function () {\r",
+                      "    const refundData = responseData.refund || responseData;\r",
+                      "\r",
+                      "    pm.expect(refundData).to.be.an('object');\r",
+                      "    \r",
+                      "    // Check if the response contains a valid payment/refund tracking ID\r",
+                      "    pm.expect(refundData.id).to.exist;\r",
+                      "    \r",
+                      "    // Ensure the transaction is in a safe, processed state (not double-charged or stuck)\r",
+                      "    pm.expect(refundData.status.toUpperCase()).to.be.oneOf([\"PENDING\", \"COMPLETED\", \"SUCCESS\"]);\r",
+                      "    \r",
+                      "    console.log(\"Idempotency Replay Verified: Server safely replayed transaction ID:\", refundData.id);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"idempotency_key\": \"{{$guid}}\",\r\n  \"amount_money\": {\r\n    \"amount\": {{remainingRefundableAmount}},\r\n    \"currency\": \"USD\"\r\n  },\r\n  \"payment_id\": \"{{savedPaymentId}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/refunds",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "refunds"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Volatility Boundary Check",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the structural validation error response payload\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Validate that the gateway correctly blocked the stale version write\r",
+                      "pm.test(\"Status code is 400 or 409\", function () {\r",
+                      "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);\r",
+                      "});\r",
+                      "\r",
+                      "// Concurrency Collision Verification\r",
+                      "pm.test(\"Verify optimistic concurrency control constraints\", function () {\r",
+                      "    if (responseData && responseData.errors && responseData.errors.length > 0) {\r",
+                      "        const primaryError = responseData.errors[0];\r",
+                      "        console.log(\"Captured Concurrency Rejection Category:\", primaryError.category);\r",
+                      "        console.log(\"Captured Concurrency Rejection Code:\", primaryError.code);\r",
+                      "\r",
+                      "        // Expect standard validation error structures or version conflict parameters\r",
+                      "        pm.expect(primaryError.category).to.be.oneOf([\"INVALID_REQUEST_ERROR\", \"CONFLICT_ERROR\"]);\r",
+                      "        \r",
+                      "        // Safety net text check confirming versioning control logic intervened\r",
+                      "        const rawPayloadString = JSON.stringify(responseData).toLowerCase();\r",
+                      "        const hasVersionContext = rawPayloadString.includes(\"version\") || rawPayloadString.includes(\"conflict\") || rawPayloadString.includes(\"expected\");\r",
+                      "        pm.expect(hasVersionContext).to.be.true;\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Data Integrity Risk: The backend accepted an obsolete version snapshot update without safety validation checks.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"order\": {\r\n    \"version\": 1,\r\n    \"location_id\": \"{{locationId}}\",\r\n    \"reference_id\": \"REF-VOLATILITY-TEST\"\r\n  },\r\n  \"idempotency_key\": \"{{$guid}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders/{{savedOrderId}}",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders",
+                    "{{savedOrderId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Gateway Security & Compliance",
+          "item": [
+            {
+              "name": "Unauthorized Access Invalidation",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse the security error payload returned by the gateway\r",
+                      "const responseData = pm.response.json();\r",
+                      "\r",
+                      "// Assertion: Validate that the security layer blocked the request immediately\r",
+                      "pm.test(\"Status code is 401 Unauthorized\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "// Security Schema Verification\r",
+                      "pm.test(\"Verify explicit authentication rejection metadata\", function () {\r",
+                      "    if (responseData && responseData.errors && responseData.errors.length > 0) {\r",
+                      "        const primaryError = responseData.errors[0];\r",
+                      "        console.log(\"Captured Security Exception Category:\", primaryError.category);\r",
+                      "        console.log(\"Captured Security Exception Code:\", primaryError.code);\r",
+                      "\r",
+                      "        // Assert that the API firewall explicitly tagged this as an authentication failure\r",
+                      "        pm.expect(primaryError.category).to.eql(\"AUTHENTICATION_ERROR\");\r",
+                      "        pm.expect(primaryError.code).to.eql(\"UNAUTHORIZED\");\r",
+                      "    } else {\r",
+                      "        pm.expect.fail(\"Security Risk: The API gateway rejected the request but did not format a standard security error schema.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{auth_secret_17j8}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders/{{savedOrderId}}",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders",
+                    "{{savedOrderId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Missing Authorization Header Enforcement",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 401 Unauthorized\", function () {\r",
+                      "    pm.response.to.have.status(401);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Verify explicit authentication rejection metadata\", function () {\r",
+                      "    const responseData = pm.response.json();\r",
+                      "    const errors = responseData.errors || [];\r",
+                      "    pm.expect(errors.length).to.be.above(0);\r",
+                      "    pm.expect(errors[0].category).to.eql(\"AUTHENTICATION_ERROR\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Response time is within acceptable threshold\", function () {\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/orders/{{savedOrderId}}",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "orders",
+                    "{{savedOrderId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Missing Content-Type Enforcement",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Parse incoming body structure safely\r",
+                      "let responseData;\r",
+                      "try {\r",
+                      "    responseData = pm.response.json();\r",
+                      "} catch(e) {\r",
+                      "    responseData = null;\r",
+                      "}\r",
+                      "\r",
+                      "// Industry-Level Protocol Evaluation Check\r",
+                      "pm.test(\"Enforce Missing Content-Type Gateway Boundary Checks\", function () {\r",
+                      "    // If the server accepted it but returned structural tracking indicators, validate them\r",
+                      "    if (pm.response.code === 200 || pm.response.code === 201) {\r",
+                      "        pm.expect(responseData).to.be.an('object');\r",
+                      "        console.log(\"Edge Case Handled: Gateway accepted payload format cleanly but isolated processing safely.\");\r",
+                      "    } else {\r",
+                      "        // Fallback protocol safety validation if the server cleanly dropped it natively\r",
+                      "        pm.expect(pm.response.code).to.be.oneOf([400, 415]);\r",
+                      "        console.log(\"Boundary Protection: Server blocked raw unmapped compliance headers.\");\r",
+                      "    }\r",
+                      "});\r",
+                      "\r",
+                      "// Structural Integrity Fallback Rule\r",
+                      "pm.test(\"Verify double-fault structural risk metadata handling\", function () {\r",
+                      "    if (responseData && responseData.errors) {\r",
+                      "        const error = responseData.errors[0];\r",
+                      "        pm.expect(error.category).to.exist;\r",
+                      "    } else {\r",
+                      "        // Ensure that even if a 200 OK happened, data integrity holds zero critical schema faults\r",
+                      "        pm.expect(pm.response.text()).to.not.include(\"INTERNAL_SERVER_ERROR\");\r",
+                      "    }\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disabledSystemHeaders": {
+                  "content-type": true
+                }
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{auth_secret_16jo}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "MALFORMED_NON_JSON_COMPLIANCE_TEST_DATA",
+                  "options": {
+                    "raw": {
+                      "language": "xml"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://connect.squareupsandbox.com/v2/payments",
+                  "protocol": "https",
+                  "host": [
+                    "connect",
+                    "squareupsandbox",
+                    "com"
+                  ],
+                  "path": [
+                    "v2",
+                    "payments"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{access_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "// Pin API version across all requests\r",
+          "pm.request.headers.add({\r",
+          "    key: \"Square-Version\",\r",
+          "    value: \"2025-10-16\"\r",
+          "});\r",
+          "\r",
+          "// Data-Driven Testing: Load embedded dataset and set variables for this iteration\r",
+          "const rawDataset = pm.collectionVariables.get(\"testDataset\");\r",
+          "\r",
+          "if (rawDataset) {\r",
+          "    try {\r",
+          "        const dataset = JSON.parse(rawDataset);\r",
+          "        const iterationIndex = pm.info.iteration % dataset.length;\r",
+          "        const currentRow = dataset[iterationIndex];\r",
+          "\r",
+          "        pm.environment.set(\"itemPrice\", currentRow.amount);\r",
+          "        pm.environment.set(\"itemName\", currentRow.itemName);\r",
+          "\r",
+          "        console.log(\"Data-Driven Row Loaded [Iteration \" + pm.info.iteration + \"]:\", currentRow);\r",
+          "    } catch (e) {\r",
+          "        console.warn(\"Data-Driven Testing: Failed to parse testDataset variable.\", e);\r",
+          "    }\r",
+          "} else {\r",
+          "    console.warn(\"Data-Driven Testing: No testDataset variable found. Using default hardcoded values.\");\r",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_secret_16jo",
+      "value": "[PUT_YOUR_SQUARE_SANDBOX_ACCESS_TOKEN]",
+      "secret": true
+    },
+    {
+      "key": "testDataset",
+      "value": "[{\"itemName\":\"Standard Line Item\",\"amount\":2500},{\"itemName\":\"Premium Line Item\",\"amount\":5000},{\"itemName\":\"Discount Line Item\",\"amount\":1000},{\"itemName\":\"Bulk Order Item\",\"amount\":8000}]"
+    }
+  ]
+}

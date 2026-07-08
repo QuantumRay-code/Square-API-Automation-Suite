@@ -1,0 +1,83 @@
+{
+	"id": "2fccc61e-db3e-43ea-88d4-bd80e0dee29b",
+	"name": "Square Sandbox Environment",
+	"values": [
+		{
+			"key": "access_token",
+			"value": "[PUT_YOUR_SQUARE_SANDBOX_ACCESS_TOKEN]",
+			"type": "default",
+			"enabled": true,
+			"secret": true
+		},
+		{
+			"key": "locationId",
+			"value": "[PUT_YOUR_LOCATION_ID_HERE]",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "savedOrderId",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "savedOrderVersion",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "savedPaymentId",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "savedRefundId",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "itemPrice",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "iterationName",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "currentOrderVersion",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "itemName",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "currentOrderTotal",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "remainingRefundableAmount",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-07-08T07:31:58.722Z",
+	"_postman_exported_using": "Postman/12.18.1"
+}
