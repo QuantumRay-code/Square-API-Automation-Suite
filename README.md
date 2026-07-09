@@ -72,10 +72,12 @@ Authentication and protocol boundary tests.
 
 ## Test Execution Results
 ### Postman Runner
-![image alt]().
+Postman Runner showing all 32 tests passing (1 iteration) across all 11 requests.
+![image alt](https://github.com/user-attachments/assets/118a86fd-5279-4fa7-823c-20ad617f6ec0)
+
 ### Newman CLI
+Newman CLI output for the same collection but with 4 iterations, 128 assertions, 0 failures.
 ![image alt](https://github.com/user-attachments/assets/16368589-1066-4aac-9b82-f07760a770fb)
-Latest full run (4 iterations, data-driven):
 
 | Metric | Result |
 |---|---|
@@ -85,7 +87,7 @@ Latest full run (4 iterations, data-driven):
 | Assertions | 128 |
 | Failures | 0 |
 
-All 11 requests pass across all 4 dataset iterations, including the 3 requests that are expected to return non-2xx status codes as their correct outcome (`Decline Exception Handling`, `Volatility Boundary Check`, `Unauthorized Access Invalidation`).
+All 11 requests pass across all 4 dataset iterations, including 3 requests that intentionally receive error responses as their correct, expected outcome rather than a success response: `Decline Exception Handling` (expects `400`), `Volatility Boundary Check` (expects `400`/`409`), and `Unauthorized Access Invalidation` (expects `401`).
 
 ## How to Use
 
