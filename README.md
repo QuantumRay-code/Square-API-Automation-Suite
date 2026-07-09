@@ -71,6 +71,9 @@ Authentication and protocol boundary tests.
 - Verified to run identically in the Postman Runner and via Newman CLI
 
 ## Test Execution Results
+### Postman Runner
+![image alt]().
+### Newman CLI
 ![image alt](https://github.com/user-attachments/assets/16368589-1066-4aac-9b82-f07760a770fb)
 Latest full run (4 iterations, data-driven):
 
@@ -107,7 +110,7 @@ Sign up at the [Square Developer Dashboard](https://developer.squareup.com/apps)
 npm install -g newman
 ```
 
-**5. (Optional — running via the Postman app instead) Import both files into Postman**
+**5. (Optional — running via the Postman runner instead) Import both files into Postman**
 
 - In Postman → **Environments** → **Square Sandbox Environment** → fill in `access_token` and `locationId`
 - In Postman → click the collection name → **Variables** tab → set:
