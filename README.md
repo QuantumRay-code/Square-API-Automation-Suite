@@ -71,7 +71,7 @@ Authentication and protocol boundary tests.
 - Verified to run identically in the Postman Runner and via Newman CLI
 
 ## Test Execution Results
-![image alt](https://github.com/QuantumRay-code/Square-API-Automation-Suite/blob/fe5c9a8546501f7e371284d3c6e436a0504d4ce3/reports/newman-reports-preview.jpg)
+![image alt](https://github.com/user-attachments/assets/16368589-1066-4aac-9b82-f07760a770fb)
 Latest full run (4 iterations, data-driven):
 
 | Metric | Result |
