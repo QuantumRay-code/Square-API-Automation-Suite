@@ -11,6 +11,18 @@ This is a Postman test automation suite built against Square's Sandbox API, cove
 
 The suite runs the same way through the Postman Runner and through the Newman CLI, so it can be executed manually or wired into a CI/CD pipeline.
 
+## Repository Structure
+
+```text
+Square-API-Automation-Suite/
+├── reports/
+│   ├── newman-report.html          # Sample Newman HTML report
+│   └── newman-reports-preview.jpg  # Sample Newman JPEG screenshot
+├── Square API Automation Suite.json # Postman collection
+├── Square Sandbox Environment.json  # Sandbox environment variables
+└── README.md
+```
+
 ## Objectives
 
 - Validate a complete order → payment → refund lifecycle, with state passed automatically between requests
