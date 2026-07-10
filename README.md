@@ -126,14 +126,14 @@ npm install -g newman
 
 **5. (Optional — running via the Postman runner instead) Import both files into Postman**
 
+Skip this step entirely if you're running via Newman only.
+
 - In Postman → **Environments** → **Square Sandbox Environment** → fill in `access_token` and `locationId`
 - In Postman → click the collection name → **Variables** tab → set:
   - `auth_secret_16jo` → your real Sandbox access token
   - `auth_secret_17j8` → `EXPIRED-TOKEN-FOR-SECURITY-TESTING` (or any invalid string)
 
 These two variables live at the **collection level**, not inside any individual request — you won't find them by opening `Unauthorized Access Invalidation` or `Missing Content-Type Enforcement` directly.
-
-Skip this step entirely if you're running via Newman only.
 
 **6. (Optional) Adjust the data-driven dataset**
 
