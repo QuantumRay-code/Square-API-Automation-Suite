@@ -146,7 +146,7 @@ The collection variable `testDataset` holds a sample array of 4 rows:
   {"itemName":"Bulk Order Item","amount":8000}
 ]
 ```
-Add, remove, or edit rows as needed. Set the **iteration count to match** your row count when you run the collection (step 7).
+Add, remove, or edit rows as needed. Set the **iteration count to match** your row count when you run the collection.
 
 **7. Run the collection**
 ```bash
